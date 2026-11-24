@@ -2,7 +2,7 @@
 import csv
 import os
 
-file_csv = r"C:\Users\Admin\Downloads\Sleep_health_and_lifestyle_dataset(rev).csv"
+file_csv = r"C:\Users\Admin\Downloads\Mini Project\Sleep_health_and_lifestyle_dataset(rev).csv"
 kolom_wajib = [ 
     "gender", "age",
     "sleep_duration", 
@@ -16,9 +16,94 @@ kolom_wajib = [
     ]
 
 data = []
-data_tidak_valid = 0
 skor_apnea = 0
 skor_insomnia = 0
+user_awal = {"admin": "admin123", "user": "user123"}
+text1 = (
+    "Gangguan Tidur (Sleep Disorder) adalah "
+    )
+text2 = (
+    "Berikut penjelasan mengenai makna dari setiap kategori Sleep Disorder"
+    "1. Normal == "
+    "   Kategori ini"
+    "2. Sleep Apnea == "
+    "   Kategori ini"
+    "3. Insomnia == "
+    "   Kategori ini"
+    "4. Both == "
+    "   Kategori ini"
+    )
+
+def menu_awal():
+    print("\n===( Beranda )===")
+    print("1. Log In")
+    print("2. Register")
+    print("3. Exit Program")
+    opsi = input("Pilih menu yang tersedia: ").strip()
+    if opsi == "1":
+        print("\n===( Login )===")
+        username = input("Masukkan username: ").strip()
+        password = input("Masukkan password: ").strip()
+        if username in user_awal and user_awal[username] == password:
+            print(f"Login berhasil! Selamat Datang, {username}")
+            return menu_utama(username)
+        else:
+            print("Username atau password salah!")
+            return menu_awal()             
+    elif opsi == "2":
+        print("\n===( Register )===")
+        username = input("Buat Username Baru: ").strip()
+        if username in user_awal:
+            print("Username sudah dipakai") 
+            return menu_awal()
+        password = input("Buat Password: ").strip()
+        user_awal[username] = password
+        print("Register berhasil! Silahkan Login.")
+        return menu_awal()
+    elif opsi == "3":
+        print("\nTerima kasih telah menggunakan sistem skrining risiko gangguan tidur!")
+    else:
+        print("\nMenu tidak tersedia!")
+        return menu_awal()
+
+def menu_utama(username):
+    print("\n=====( Menu Utama )=====")
+    print("1. Mengenal Sleep Disorder")
+    print("2. Data Sampel Sleep Disorder")
+    print("3. Pencarian Data Sampel")
+    print("4. Skrining Mandiri")
+    print("5. Status Kategori")
+    print("6. Log Out")
+    opsi = input("Pilih menu yang tersedia: ").strip()
+    if opsi == "1":
+        print("\n===( Sleep Disorder )===")
+        print(text1)
+        return text1
+    elif opsi == "2":
+        print("\n===( Data Sampel Sleep Disorder )===")
+        return menu_data_sampel()
+    elif opsi == "3":
+        print("\n===( Pencarian Data Sampel )===")
+        return menu_cari_data()
+    elif opsi == "4":
+        print("\n==( Skrining Mandiri )===")
+        return menu_skrining()
+    elif opsi == "5":
+        print("\n===( Status Kategori )===")
+        print(text2)
+        return text2
+    elif opsi == "6":
+        print(f"\n{username} berhasil Log Out. Kembali ke Beranda")
+        return menu_awal()
+    else:
+        print("\nMenu tidak tersedia!")
+        return menu_utama(username)
+
+def menu_cari_data():
+    print("Coming Soon")
+
+def menu_skrining():
+    print("Coming Soon")
 
 def validasi_data(gender,age,sleep_duration,sleep_quality,activity_level,stress_level,bmi_category,heart_rate,daily_steps):
     if gender not in ["Male", "Female"]:
@@ -211,24 +296,13 @@ def klasifikasi_status(total_skor_apnea,total_skor_insomnia,total_apnea,total_in
         total_normal += 1
     return status,total_apnea,total_insomnia,total_both,total_normal
 
-if not os.path.exists(file_csv):
-    print("File CSV tidak Ditemukan")
+def menu_data_sampel():
+    if not os.path.exists(file_csv):
+        print("File CSV tidak Ditemukan")
 
-else:
-    with open(file_csv, "r", newline="", encoding="utf-8-sig") as file:
-        reader = csv.DictReader(file)
-
-        if reader.fieldnames is None:
-            print("Header dalam File tidak Ditemukan")
-
-        elif not all(kolom in reader.fieldnames for kolom in kolom_wajib):
-            kolom_kosong = [kolom for kolom in kolom_wajib if kolom not in reader.fieldnames]
-            print("Kolom dalam File tidak Ditemukan")
-            for kolom in kolom_kosong:
-                print(f"- {kolom}")
-                data_tidak_valid += 1
-
-        else:
+    else:
+        with open(file_csv, "r", newline="", encoding="utf-8-sig") as file:
+            reader = csv.DictReader(file)
             for nomor_baris, row in enumerate(reader, start=2):
                 try:
                     person_id = row["person_id"]
@@ -242,24 +316,12 @@ else:
                     blood_pressure = row["blood_pressure"]
                     heart_rate = int(row["heart_rate"])
                     daily_steps = int(row["daily_steps"])
-
-                except (ValueError, TypeError, AttributeError):
-                    print(f"Peringatan! Sample dengan Person ID ({person_id}): "
-                        "salah satu nilai tidak valid!")
-                    data_tidak_valid += 1
+                except:
                     continue
-
-                if not validasi_data(gender,age,sleep_duration,sleep_quality,activity_level,stress_level,bmi_category,heart_rate,daily_steps):
-                    print(f"Peringatan! Sample dengan Person ID ({person_id}): "
-                        "salah satudata tidak valid!")
-                    data_tidak_valid += 1
-                    continue
-
                 data.append(row)
 
             if len(data) == 0:
-                print("\nDataset tidak valid!")
-            
+                print("\nDataset tidak valid!")          
             else:
                 total_apnea = 0
                 total_insomnia = 0
@@ -303,17 +365,15 @@ else:
                 persentase_both = (total_both / len(data)) * 100
                 persentase_normal = (total_normal / len(data)) * 100
 
-
-                print("\nDATA EVALUASI SLEEP HEALTH")
+                print("[TABEL SAMPEL RISIKO SLEEP DISORDER]")
                 print("=" * 179)
                 print(f"|{'No':<4}|{'Person ID':<10}|{'Gender':<6}|{'Age':<3}|{'Sleep Duration':<14}|{'Sleep Quality':<13}|{'Activity Level':<14}|{'Stress Level':<12}|{'BMI Category':<12}|{'Blood Pressure':<15}|{'Heart Rate':<10}|{'Daily Steps':<11}|{'Total Apnea':<12}|{'Total Insomnia':<15}|{'Status':<12}|")
                 print("=" * 179)
                 for nomor, row in enumerate(data, start=1):
                     print(f"|{nomor:<4}|{row['person_id']:<10}|{row['gender']:<6}|{row['age']:<3}|{row['sleep_duration']:<14}|{row['sleep_quality']:<13}|{row['activity_level']:<14}|{row['stress_level']:<12}|{row['bmi_category']:<12}|{row['blood_pressure']:<15}|{row['heart_rate']:<10}|{row['daily_steps']:<11}|{row['total_skor_apnea']:<12}|{row['total_skor_insomnia']:<15}|{row['status']:<12}|")
                 print("=" * 179)
-                print("\nRINGKASAN EVALUASI DATA SLEEP HEALTH")
-                print(f"Jumlah data valid           : {len(data)}")
-                print(f"Jumlah data tidak valid     : {data_tidak_valid}")
+                print("\n[RINGKASAN TABEL SAMPEL]")
+                print(f"Jumlah Data                 : {len(data)}")
                 print(f"Jumlah Sleep Apnea          : {total_apnea}")
                 print(f"Jumlah Insomnia             : {total_insomnia}")
                 print(f"Jumlah Both                 : {total_both}")
@@ -322,3 +382,19 @@ else:
                 print(f"Persentase Insomnia         : {persentase_insomnia:.2f}%")
                 print(f"Persentase Both             : {persentase_both:.2f}%")
                 print(f"Persentase Normal           : {persentase_normal:.2f}%")
+    print("\n1. Back to Menu")
+    opsi = input("Pilih menu yang tersedia: ").strip()
+    if opsi == "1":
+        print("Kembali ke menu utama.")
+        return menu_utama(username)
+    else:
+        while opsi != "1":
+            print("Menu tidak tersedia!")
+            opsi = input("\nPilih menu yang tersedia: ").strip()
+            if opsi == "1":
+                print("Kembali ke menu utama.")
+                return menu_utama(username)
+
+print("\n========( Sleep Disorder Risk Screening System )========")
+print("Selamat datang di sistem skrining risiko gangguan tidur!")    
+menu_awal = menu_awal()
