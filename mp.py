@@ -7,10 +7,9 @@ from getpass import getpass
 
 file_csv = r"C:\Users\embun dinanti\Downloads\Sleep_health_and_lifestyle_dataset.csv"
 
-# [BARU] lokasi folder riwayat & ambang batas risiko
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FOLDER_RIWAYAT = os.path.join(BASE_DIR, "riwayat")
-BATAS_RISIKO = 5   # skor minimal agar dianggap berisiko
+BATAS_RISIKO = 5
 
 kolom_wajib = [ 
     "gender", "age",
@@ -23,7 +22,7 @@ kolom_wajib = [
     "heart_rate", 
     "daily_steps", 
     ]
-# [BARU] kolom file riwayat
+
 KOLOM_RIWAYAT = [
     "tanggal", "gender", "age", "sleep_duration", "sleep_quality",
     "activity_level", "stress_level", "bmi_category", "blood_pressure",
@@ -49,10 +48,7 @@ text2 = (
     "   Kategori ini"
     )
 
-
-# ============================================================
-# [DISEMPURNAKAN] REGISTER & LOGIN
-# ============================================================
+#REGISTER & LOGIN
 def username_valid(username):
     return re.fullmatch(r"[A-Za-z0-9_]{3,20}", username) is not None
 
@@ -103,10 +99,7 @@ def login():
     print("Terlalu banyak percobaan gagal. Kembali ke Beranda.")
     return None
 
-
-# ============================================================
 # MENU
-# ============================================================
 def menu_awal():
     print("\n===( Beranda )===")
     print("1. Log In")
@@ -127,7 +120,6 @@ def menu_awal():
         print("\nMenu tidak tersedia!")
         return menu_awal()
 
-# [BARU] tombol kembali yang dipakai semua menu (supaya program tidak berhenti)
 def kembali_ke_menu(username):
     print("\n1. Back to Menu")
     opsi = input("Pilih menu yang tersedia: ").strip()
@@ -179,10 +171,7 @@ def menu_cari_data(username):
     print("Coming Soon")
     return kembali_ke_menu(username)
 
-
-# ============================================================
-# VALIDASI & RULE-BASED SCORING (tidak diubah)
-# ============================================================
+# VALIDASI & RULE-BASED SCORING 
 def validasi_data(gender,age,sleep_duration,sleep_quality,activity_level,stress_level,bmi_category,heart_rate,daily_steps):
     if gender not in ["Male", "Female"]:
         return False
@@ -374,7 +363,6 @@ def klasifikasi_status(total_skor_apnea,total_skor_insomnia,total_apnea,total_in
         total_normal += 1
     return status,total_apnea,total_insomnia,total_both,total_normal
 
-# [BARU] menjumlahkan semua skor dari satu dict data (dipakai Skrining Mandiri)
 def hitung_skor(d):
     semua_skor = [
         klasifikasi_gender(d["gender"]),
@@ -392,12 +380,9 @@ def hitung_skor(d):
     total_insomnia = sum(skor[1] for skor in semua_skor)
     return total_apnea, total_insomnia
 
-
-# ============================================================
 # MENU 2: DATA SAMPEL (logika tidak diubah, hanya perbaikan agar bisa jalan)
-# ============================================================
 def menu_data_sampel(username):
-    data = []   # dikosongkan setiap menu dibuka, supaya data tidak menumpuk
+    data = []
 
     if not os.path.exists(file_csv):
         print("File CSV tidak Ditemukan")
@@ -486,10 +471,7 @@ def menu_data_sampel(username):
                 print(f"Persentase Normal           : {persentase_normal:.2f}%")
     return kembali_ke_menu(username)
 
-
-# ============================================================
-# [BARU] MENU 4: SKRINING MANDIRI
-# ============================================================
+# MENU 4: SKRINING MANDIRI
 def tekanan_darah_valid(teks):
     """Format harus sistolik/diastolik (contoh 120/80) dengan nilai masuk akal."""
     try:
@@ -581,7 +563,6 @@ def buat_rekomendasi(d, status):
     return saran
 
 def path_riwayat(username):
-    # Karakter selain huruf/angka/_/- diganti "_" supaya aman dijadikan nama file.
     aman = re.sub(r"[^A-Za-z0-9_-]", "_", username)
     return os.path.join(FOLDER_RIWAYAT, f"riwayat_{aman}.csv")
 
@@ -605,7 +586,6 @@ def simpan_riwayat(username, d, total_apnea, total_insomnia, status):
 def menu_skrining(username):
     d = ambil_data_pengguna()
     total_apnea, total_insomnia = hitung_skor(d)
-    # memakai klasifikasi_status milik kode pertama agar hasilnya konsisten dengan Data Sampel
     status = klasifikasi_status(total_apnea, total_insomnia, 0, 0, 0, 0)[0]
 
     print("\n[HASIL SKRINING]")
@@ -622,10 +602,7 @@ def menu_skrining(username):
     print("Catatan: hasil ini hanya skrining awal berbasis skor, bukan diagnosis medis.")
     return kembali_ke_menu(username)
 
-
-# ============================================================
-# [BARU] MENU 6: RIWAYAT PEMERIKSAAN SAYA
-# ============================================================
+# MENU 6: RIWAYAT PEMERIKSAAN SAYA
 URUTAN_STATUS = {"Normal": 0, "Insomnia": 1, "Sleep Apnea": 1, "Both": 2}
 
 def baca_riwayat(username):
@@ -642,7 +619,6 @@ def menu_riwayat(username):
         print("Belum ada riwayat pemeriksaan. Silakan lakukan Skrining Mandiri terlebih dahulu.")
         return kembali_ke_menu(username)
 
-    # (judul kolom, lebar, nama kolom di CSV)
     kolom = [
         ("No", 4, None), ("Tanggal", 19, "tanggal"), ("Gender", 6, "gender"),
         ("Usia", 4, "age"), ("Durasi", 6, "sleep_duration"), ("Kualitas", 8, "sleep_quality"),
