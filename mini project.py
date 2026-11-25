@@ -1,6 +1,7 @@
 #Mini Project Sleep Health and Lifestyle Dataset
 import csv
 import os
+from datetime import datetime
 
 file_csv = r"C:\Users\Admin\Downloads\Mini Project\Sleep_health_and_lifestyle_dataset(rev).csv"
 kolom_wajib = [ 
@@ -68,17 +69,19 @@ def menu_awal():
 
 def menu_utama(username):
     print("\n=====( Menu Utama )=====")
+    print(f"Username: {username}")
     print("1. Mengenal Sleep Disorder")
     print("2. Data Sampel Sleep Disorder")
     print("3. Pencarian Data Sampel")
     print("4. Skrining Mandiri")
     print("5. Status Kategori")
-    print("6. Log Out")
+    print("6. Riwayat Pemeriksaan Saya")
+    print("7. Log Out")
     opsi = input("Pilih menu yang tersedia: ").strip()
     if opsi == "1":
-        print("\n===( Sleep Disorder )===")
+        print("\n===( Mengenal Sleep Disorder )===")
         print(text1)
-        return text1
+        return kembali_ke_menu(username)
     elif opsi == "2":
         print("\n===( Data Sampel Sleep Disorder )===")
         return menu_data_sampel()
@@ -87,12 +90,15 @@ def menu_utama(username):
         return menu_cari_data()
     elif opsi == "4":
         print("\n==( Skrining Mandiri )===")
-        return menu_skrining()
+        return menu_skrining(username)
     elif opsi == "5":
         print("\n===( Status Kategori )===")
         print(text2)
-        return text2
+        return kembali_ke_menu()
     elif opsi == "6":
+        print("\n===( Riwayat Pemeriksaan Saya )===")
+        return menu_riwayat(username)
+    elif opsi == "7":
         print(f"\n{username} berhasil Log Out. Kembali ke Beranda")
         return menu_awal()
     else:
@@ -101,9 +107,80 @@ def menu_utama(username):
 
 def menu_cari_data():
     print("Coming Soon")
+    return kembali_ke_menu(username)
 
-def menu_skrining():
-    print("Coming Soon")
+def menu_skrining(username):
+    print("Silahkan masukkan data yang dibutuhkan dengan benar!")
+    print("Note: N = Normal, K = Kegemukan, O = Obesitas")
+    print("      Ketik lengkap untuk Jenis Kelamin dan Berat Badan")
+    gender = input("jenis Kelamin (Male/Female) : ").strip()
+    age = int(input("Umur                        : ").strip())
+    sleep_duration = int(input("Durasi Tidur (1-10)         : ").strip())
+    sleep_quality = int(input("Kualitas Tidur (1-10)       : ").strip())
+    activity_level = int(input("Tingkat Aktivitas (1-100)   : ").strip())
+    stress_level = int(input("Tingkat Stress (1-10)       : ").strip())
+    bmi_category = input("Kategori Berat Badan (N/K/O): ").strip()
+    blood_pressure = input("Tekanan Darah (ex: 115/86)  : ").strip()
+    heart_rate = int(input("Detak Jantung (20-220)      : ").strip())
+    daily_steps = int(input("Perkiraan Langkah Harian    : ").strip())
+
+    while not validasi_data(gender,age,sleep_duration,sleep_quality,activity_level,stress_level,bmi_category,heart_rate,daily_steps):
+        print("Terdapat kesalahan pada data yang Anda input. Mohon Diperhatikan Lagi!")
+        print("Note: N = Normal, K = Kegemukan, O = Obesitas")
+        print("      Ketik lengkap untuk Jenis Kelamin dan Berat Badan")
+        gender = input("jenis Kelamin (Male/Female) : ").strip()
+        age = int(input("Umur                        : ").strip())
+        sleep_duration = int(input("Durasi Tidur (1-10)         : ").strip())
+        sleep_quality = int(input("Kualitas Tidur (1-10)       : ").strip())
+        activity_level = int(input("Tingkat Aktivitas (1-100)   : ").strip())
+        stress_level = int(input("Tingkat Stress (1-10)       : ").strip())
+        bmi_category = input("Kategori Berat Badan (N/K/O): ").strip()
+        blood_pressure = input("Tekanan Darah (ex: 115/86)  : ").strip()
+        heart_rate = int(input("Detak Jantung (20-220)      : ").strip())
+        daily_steps = int(input("Perkiraan Langkah Harian    : ").strip())
+
+
+    skor_gender = klasifikasi_gender(gender)
+    skor_age = klasifikasi_age(age)
+    skor_sleep_duration = klasifikasi_sleep_duration(sleep_duration)
+    skor_sleep_quality = klasifikasi_sleep_quality(sleep_quality)
+    skor_activity_level = klasifikasi_activity_level(activity_level)
+    skor_stress_level = klasifikasi_stress_level(stress_level)
+    skor_bmi_category = klasifikasi_bmi_category(bmi_category)
+    skor_blood_pressure = klasifikasi_blood_pressure(blood_pressure)
+    skor_heart_rate = klasifikasi_heart_rate(heart_rate)
+    skor_daily_steps = klasifikasi_daily_steps(daily_steps)
+                   
+    semua_skor = [skor_gender,skor_age,skor_sleep_duration,skor_sleep_quality,skor_activity_level,skor_stress_level,skor_bmi_category,skor_blood_pressure,skor_heart_rate,skor_daily_steps]
+    total_skor_apnea = sum(skor[0] for skor in semua_skor)
+    total_skor_insomnia = sum(skor[1] for skor in semua_skor)
+    status_user = Klasifikasi_status_user(total_skor_apnea,total_skor_insomnia)
+
+    print("\n[Hasil Skrining Pengguna]")                
+    print(f"Total Skor Sleep Apnea    : {total_skor_apnea}")
+    print(f"Total Skor Insomnia       : {total_skor_insomnia}")
+    print(f"Status Pengguna           : {status_user}")
+    print(buat_rekomendasi(status_user,sleep_duration,activity_level,stress_level,bmi_category,daily_steps))
+
+    return kembali_ke_menu(username)
+
+def menu_riwayat(username):
+    print("Tabel Riwayat Skrining Pengguna")
+    return kembali_ke_menu(username)
+
+def kembali_ke_menu(username):
+    print("\n1. Back to Menu")
+    opsi = input("Pilih menu yang tersedia: ").strip()
+    if opsi == "1":
+        print("Kembali ke menu utama.")
+        return menu_utama(username)
+    else:
+        while opsi != "1":
+            print("Menu tidak tersedia!")
+            opsi = input("\nPilih menu yang tersedia: ").strip()
+            if opsi == "1":
+                print("Kembali ke menu utama.")
+                return menu_utama(username)
 
 def validasi_data(gender,age,sleep_duration,sleep_quality,activity_level,stress_level,bmi_category,heart_rate,daily_steps):
     if gender not in ["Male", "Female"]:
@@ -296,6 +373,46 @@ def klasifikasi_status(total_skor_apnea,total_skor_insomnia,total_apnea,total_in
         total_normal += 1
     return status,total_apnea,total_insomnia,total_both,total_normal
 
+def buat_rekomendasi(status_user,sleep_duration,activity_level,stress_level,bmi_category,daily_steps):
+    if status_user == "Normal":
+        print("Risiko Anda terbilang kecil. Pertahankan pola hidup yang sehat ini!")
+    elif status_user == "Sleep Apnea":
+        print("Anda memiliki risiko lebih besar terkena gangguan Sleep Apnea")
+    elif status_user == "Insomnia":
+        print("Anda memiliki risiko lebih besar terkena gangguan Insomnia")
+    else:
+        print("Anda memiliki risiko terkena kedua jenis gangguan tidur ini")
+    
+    print("\nBerikut Rekomendasi dari Kami: ")
+    if status_user in ["Normal", "Sleep Apnea", "Insomnia", "Both"]:
+        if sleep_duration > 9:
+            print("Kurangi durasi tidur menuju 7-9 jam per malam, termasuk akhir pekan.")
+        elif sleep_duration < 7:
+            print("Tambah durasi tidur menuju 7-9 jam per malam, termasuk akhir pekan.")
+        if activity_level < 30:
+            print("Targetkan aktivitas fisik minimal 30 menit per hari, seperti olahraga ringan).")
+        if stress_level >= 7:
+            print("Lakukan latihan pernafasan dan relaksasi setiap hari, serta atur pola tidur yang baik.")
+        elif bmi_category == "Obese":
+            print("Terapkan pola makan sehat! Hindari makanan yang mengandung banyak lemak dan gula, perbanyak makan sayur dan buah.")
+        if daily_steps < 3000:
+            print("Naikkan langkah harian secara bertahap, misalnya tambah 1.000 langkah tiap minggu.")
+    else:
+        print("Tidak ada yang perlu diperbaiki lagi! Semoga tidur Anda menjadi lebih baik.")
+    return "\n={Data disimpan ke dalam riwayat skrining Anda}="
+
+def Klasifikasi_status_user(total_skor_apnea,total_skor_insomnia):
+    if total_skor_apnea >= 5 or total_skor_insomnia >= 5:
+        if total_skor_apnea > total_skor_insomnia:
+            status_user = "Sleep Apnea"
+        elif total_skor_insomnia > total_skor_apnea:
+            status_user = "Insomnia"
+        else:
+            status_user = "Both"
+    else:
+        status_user = "Normal"
+    return status_user
+
 def menu_data_sampel():
     if not os.path.exists(file_csv):
         print("File CSV tidak Ditemukan")
@@ -382,18 +499,7 @@ def menu_data_sampel():
                 print(f"Persentase Insomnia         : {persentase_insomnia:.2f}%")
                 print(f"Persentase Both             : {persentase_both:.2f}%")
                 print(f"Persentase Normal           : {persentase_normal:.2f}%")
-    print("\n1. Back to Menu")
-    opsi = input("Pilih menu yang tersedia: ").strip()
-    if opsi == "1":
-        print("Kembali ke menu utama.")
-        return menu_utama(username)
-    else:
-        while opsi != "1":
-            print("Menu tidak tersedia!")
-            opsi = input("\nPilih menu yang tersedia: ").strip()
-            if opsi == "1":
-                print("Kembali ke menu utama.")
-                return menu_utama(username)
+    return kembali_ke_menu(username)
 
 print("\n========( Sleep Disorder Risk Screening System )========")
 print("Selamat datang di sistem skrining risiko gangguan tidur!")    
