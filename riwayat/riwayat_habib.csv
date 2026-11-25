@@ -1,0 +1,2 @@
+tanggal,gender,age,sleep_duration,sleep_quality,activity_level,stress_level,bmi_category,blood_pressure,heart_rate,daily_steps,total_skor_apnea,total_skor_insomnia,status_user
+2026-11-26 01:13:09,Male,19,6,5,60,7,Normal,108/75,75,4000,5,8,Insomnia
