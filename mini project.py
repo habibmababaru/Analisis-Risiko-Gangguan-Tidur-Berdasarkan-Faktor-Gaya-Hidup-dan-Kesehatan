@@ -18,8 +18,8 @@ kolom_riwayat = [
     "daily_steps", "total_skor_apnea", "total_skor_insomnia"
     ]
 base_dir = os.path.dirname(os.path.abspath(__file__))
-folder_riwayat = "C:\Users\Admin\Downloads\Mini Project\riwayat"
-file_akun = "C:\Users\Admin\Downloads\Mini Project\akun.json"
+folder_riwayat = os.path.join(base_dir, "riwayat")
+file_akun = os.path.join(base_dir, "akun.json")
 
 data = []
 skor_apnea = 0
@@ -39,6 +39,27 @@ text2 = (
     "   Kategori ini"
     )
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def muat_akun():
+    if os.path.exists(file_akun):
+        with open(file_akun, "r", encoding="utf-8") as file:
+            return json.load(file)
+    default = {
+        "admin": hash_password("admin123"),
+        "user": hash_password("user123")
+    }
+    with open(file_akun, "w", encoding="utf-8") as file:
+        json.dump(default, file, indent=4)
+    return default
+
+user_awal = muat_akun()
+
+def simpan_akun():
+    with open(file_akun, "w", encoding="utf-8") as file:
+        json.dump(user_awal, file, indent=4)
+
 def menu_awal():
     print("\n===( Beranda )===")
     print("1. Log In")
@@ -49,7 +70,7 @@ def menu_awal():
         print("\n===( Login )===")
         username = input("Masukkan username: ").strip()
         password = input("Masukkan password: ").strip()
-        if username in user_awal and user_awal[username] == password:
+        if username in user_awal and user_awal[username] == hash_password(password):
             print(f"Login berhasil! Selamat Datang, {username}")
             return menu_utama(username)
         else:
@@ -62,7 +83,8 @@ def menu_awal():
             print("Username sudah dipakai") 
             return menu_awal()
         password = input("Buat Password: ").strip()
-        user_awal[username] = password
+        user_awal[username] = hash_password(password)
+        simpan_akun()
         print("Register berhasil! Silahkan Login.")
         return menu_awal()
     elif opsi == "3":
@@ -70,24 +92,6 @@ def menu_awal():
     else:
         print("\nMenu tidak tersedia!")
         return menu_awal()
-
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
-
-def muat_akun():
-    if os.path.exists(file_akun):
-        with open(file_akun, "r", encoding="utf-8") as file:
-            return json.load(file)
-    return{
-        "admin": hash_password("admin123"),
-        "user": hash_password("user123")
-    }
-
-user_awal = muat_akun()
-
-def simpan_akun():
-    with open(file_akun, "w", encoding="utf-8") as file:
-        json.dump(user_awal, file, indent=4)
 
 def menu_utama(username):
     print("\n=====( Menu Utama )=====")
