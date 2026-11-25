@@ -1,25 +1,29 @@
 #Mini Project Sleep Health and Lifestyle Dataset
 import csv
 import os
+import json
+import hashlib
 from datetime import datetime
 
 file_csv = r"C:\Users\Admin\Downloads\Mini Project\Sleep_health_and_lifestyle_dataset(rev).csv"
 kolom_wajib = [ 
-    "gender", "age",
-    "sleep_duration", 
-    "sleep_quality", 
-    "activity_level", 
-    "stress_level", 
-    "bmi_category", 
-    "blood_pressure", 
-    "heart_rate", 
-    "daily_steps", 
+    "gender", "age", "sleep_duration", "sleep_quality", 
+    "activity_level", "stress_level", "bmi_category", 
+    "blood_pressure", "heart_rate", "daily_steps", 
     ]
+kolom_riwayat = [
+    "tanggal", "gender", "age", "sleep_duration", 
+    "sleep_quality", "activity_level", "stress_level", 
+    "bmi_category", "blood_pressure", "heart_rate", 
+    "daily_steps", "total_skor_apnea", "total_skor_insomnia"
+    ]
+base_dir = os.path.dirname(os.path.abspath(__file__))
+folder_riwayat = "C:\Users\Admin\Downloads\Mini Project\riwayat"
+file_akun = "C:\Users\Admin\Downloads\Mini Project\akun.json"
 
 data = []
 skor_apnea = 0
 skor_insomnia = 0
-user_awal = {"admin": "admin123", "user": "user123"}
 text1 = (
     "Gangguan Tidur (Sleep Disorder) adalah "
     )
@@ -66,6 +70,24 @@ def menu_awal():
     else:
         print("\nMenu tidak tersedia!")
         return menu_awal()
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def muat_akun():
+    if os.path.exists(file_akun):
+        with open(file_akun, "r", encoding="utf-8") as file:
+            return json.load(file)
+    return{
+        "admin": hash_password("admin123"),
+        "user": hash_password("user123")
+    }
+
+user_awal = muat_akun()
+
+def simpan_akun():
+    with open(file_akun, "w", encoding="utf-8") as file:
+        json.dump(user_awal, file, indent=4)
 
 def menu_utama(username):
     print("\n=====( Menu Utama )=====")
