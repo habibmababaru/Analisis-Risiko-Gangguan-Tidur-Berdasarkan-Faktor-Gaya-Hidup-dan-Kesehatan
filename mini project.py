@@ -2,7 +2,7 @@
 import csv
 import os
 
-file_csv = r"C:\Users\Admin\Downloads\Sleep_health_and_lifestyle_dataset(rev).csv"
+file_csv = r"C:\Users\embun dinanti\Downloads\Sleep_health_and_lifestyle_dataset(rev).csv"
 kolom_wajib = [ 
     "gender", "age",
     "sleep_duration", 
