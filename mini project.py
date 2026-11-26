@@ -573,92 +573,68 @@ def menu_riwayat(username):
 
     return kembali_ke_menu(username)
     
-def menu_data_sampel(username):
+def muat_data_sampel():
+    hasil = []
     if not os.path.exists(file_csv):
-        print("File CSV tidak Ditemukan")
+        return hasil
+    with open(file_csv, "r", newline="", encoding="utf-8-sig") as file:
+        for row in csv.DictReader(file):
+            try:
+                row["person_id"]
+                semua_skor = [klasifikasi_gender(row["gender"]), klasifikasi_age(int(row["age"])), klasifikasi_sleep_duration(float(row["sleep_duration"])), klasifikasi_sleep_quality(int(row["sleep_quality"])), klasifikasi_activity_level(int(row["activity_level"])), klasifikasi_stress_level(int(row["stress_level"])), klasifikasi_bmi_category(row["bmi_category"]), klasifikasi_blood_pressure(row["blood_pressure"]), klasifikasi_heart_rate(int(row["heart_rate"])), klasifikasi_daily_steps(int(row["daily_steps"]))]
+            except (KeyError, ValueError):
+                continue
+            row["total_skor_apnea"] = sum(skor[0] for skor in semua_skor)
+            row["total_skor_insomnia"] = sum(skor[1] for skor in semua_skor)
+            row["status"] = Klasifikasi_status_user(row["total_skor_apnea"], row["total_skor_insomnia"])
+            hasil.append(row)
+    return hasil
 
+def cetak_tabel_sampel(rows, judul):
+    print(f"[{judul}]")
+    print("=" * 179)
+    print(f"|{'No':<4}|{'Person ID':<10}|{'Gender':<6}|{'Age':<3}|{'Sleep Duration':<14}|{'Sleep Quality':<13}|{'Activity Level':<14}|{'Stress Level':<12}|{'BMI Category':<12}|{'Blood Pressure':<15}|{'Heart Rate':<10}|{'Daily Steps':<11}|{'Skor Sleep Apnea':<12}|{'Skor Insomnia':<15}|{'Status':<12}|")
+    print("=" * 179)
+    for nomor, row in enumerate(rows, start=1):
+        print(f"|{nomor:<4}|{row['person_id']:<10}|{row['gender']:<6}|{row['age']:<3}|{row['sleep_duration']:<14}|{row['sleep_quality']:<13}|{row['activity_level']:<14}|{row['stress_level']:<12}|{row['bmi_category']:<12}|{row['blood_pressure']:<15}|{row['heart_rate']:<10}|{row['daily_steps']:<11}|{row['total_skor_apnea']:<12}|{row['total_skor_insomnia']:<15}|{row['status']:<12}|")
+    print("=" * 179)
+
+def menu_cari_data(username):
+    data_sampel = muat_data_sampel()
+    if len(data_sampel) == 0:
+        print("File CSV tidak ditemukan atau dataset tidak valid!")
+        return kembali_ke_menu(username)
+
+    parameter = ["person_id", "gender", "age", "sleep_duration", "sleep_quality", "activity_level", "stress_level", "bmi_category", "blood_pressure", "heart_rate", "daily_steps", "status"]
+    rentang_durasi = [("Kurang dari 6 jam", 0, 6), ("6 - 6,9 jam", 6, 7), ("7 - 8,9 jam", 7, 9), ("9 jam atau lebih", 9, 100)]
+
+    print("Cari data berdasarkan parameter:")
+    for no, kolom in enumerate(parameter, start=1):
+        print(f"{no}. {kolom}")
+    opsi = input("Pilih parameter: ").strip()
+    if not opsi.isdigit() or not 1 <= int(opsi) <= len(parameter):
+        print("Menu tidak tersedia!")
+        return menu_cari_data(username)
+    kolom = parameter[int(opsi) - 1]
+
+    if kolom == "sleep_duration":
+        for no, (label, bawah, atas) in enumerate(rentang_durasi, start=1):
+            print(f"{no}. {label}")
+        pilihan = input("Pilih rentang durasi tidur: ").strip()
+        if not pilihan.isdigit() or not 1 <= int(pilihan) <= len(rentang_durasi):
+            print("Menu tidak tersedia!")
+            return menu_cari_data(username)
+        _, bawah, atas = rentang_durasi[int(pilihan) - 1]
+        hasil = [r for r in data_sampel if bawah <= float(r["sleep_duration"]) < atas]
     else:
-        with open(file_csv, "r", newline="", encoding="utf-8-sig") as file:
-            reader = csv.DictReader(file)
-            for nomor_baris, row in enumerate(reader, start=2):
-                try:
-                    person_id = row["person_id"]
-                    gender = row["gender"]
-                    age = int(row["age"])
-                    sleep_duration = float(row["sleep_duration"])
-                    sleep_quality = int(row["sleep_quality"])
-                    activity_level = int(row["activity_level"])
-                    stress_level = int(row["stress_level"])
-                    bmi_category = row["bmi_category"]
-                    blood_pressure = row["blood_pressure"]
-                    heart_rate = int(row["heart_rate"])
-                    daily_steps = int(row["daily_steps"])
-                except:
-                    continue
-                data.append(row)
+        kata = input(f"\nMasukkan {kolom} yang dicari: ").strip().lower()
+        hasil = [r for r in data_sampel if r[kolom].strip().lower() == kata]
 
-            if len(data) == 0:
-                print("\nDataset tidak valid!")          
-            else:
-                total_apnea = 0
-                total_insomnia = 0
-                total_both = 0
-                total_normal = 0
-
-                for row in data:
-                    gender = row["gender"]
-                    age = int(row["age"])
-                    sleep_duration = float(row["sleep_duration"])
-                    sleep_quality = int(row["sleep_quality"])
-                    activity_level = int(row["activity_level"])
-                    stress_level = int(row["stress_level"])
-                    bmi_category = row["bmi_category"]
-                    blood_pressure = row["blood_pressure"]
-                    heart_rate = int(row["heart_rate"])
-                    daily_steps = int(row["daily_steps"])
-
-                    skor_gender = klasifikasi_gender(gender)
-                    skor_age = klasifikasi_age(age)
-                    skor_sleep_duration = klasifikasi_sleep_duration(sleep_duration)
-                    skor_sleep_quality = klasifikasi_sleep_quality(sleep_quality)
-                    skor_activity_level = klasifikasi_activity_level(activity_level)
-                    skor_stress_level = klasifikasi_stress_level(stress_level)
-                    skor_bmi_category = klasifikasi_bmi_category(bmi_category)
-                    skor_blood_pressure = klasifikasi_blood_pressure(blood_pressure)
-                    skor_heart_rate = klasifikasi_heart_rate(heart_rate)
-                    skor_daily_steps = klasifikasi_daily_steps(daily_steps)
-                    
-                    semua_skor = [skor_gender,skor_age,skor_sleep_duration,skor_sleep_quality,skor_activity_level,skor_stress_level,skor_bmi_category,skor_blood_pressure,skor_heart_rate,skor_daily_steps]
-                    total_skor_apnea = sum(skor[0] for skor in semua_skor)
-                    total_skor_insomnia = sum(skor[1] for skor in semua_skor)
-                    status, total_apnea, total_insomnia, total_both, total_normal = klasifikasi_status(total_skor_apnea,total_skor_insomnia,total_apnea,total_insomnia,total_both,total_normal)
-                    
-                    row["total_skor_apnea"] = total_skor_apnea
-                    row["total_skor_insomnia"] = total_skor_insomnia
-                    row["status"] = status
-                
-                persentase_apnea = (total_apnea / len(data)) * 100
-                persentase_insomnia = (total_insomnia / len(data)) * 100
-                persentase_both = (total_both / len(data)) * 100
-                persentase_normal = (total_normal / len(data)) * 100
-
-                print("[TABEL SAMPEL RISIKO SLEEP DISORDER]")
-                print("=" * 179)
-                print(f"|{'No':<4}|{'Person ID':<10}|{'Gender':<6}|{'Age':<3}|{'Sleep Duration':<14}|{'Sleep Quality':<13}|{'Activity Level':<14}|{'Stress Level':<12}|{'BMI Category':<12}|{'Blood Pressure':<15}|{'Heart Rate':<10}|{'Daily Steps':<11}|{'Skor Sleep Apnea':<12}|{'Skor Insomnia':<15}|{'Status':<12}|")
-                print("=" * 179)
-                for nomor, row in enumerate(data, start=1):
-                    print(f"|{nomor:<4}|{row['person_id']:<10}|{row['gender']:<6}|{row['age']:<3}|{row['sleep_duration']:<14}|{row['sleep_quality']:<13}|{row['activity_level']:<14}|{row['stress_level']:<12}|{row['bmi_category']:<12}|{row['blood_pressure']:<15}|{row['heart_rate']:<10}|{row['daily_steps']:<11}|{row['total_skor_apnea']:<12}|{row['total_skor_insomnia']:<15}|{row['status']:<12}|")
-                print("=" * 179)
-                print("\n[RINGKASAN TABEL SAMPEL]")
-                print(f"Jumlah Data                 : {len(data)}")
-                print(f"Jumlah Sleep Apnea          : {total_apnea}")
-                print(f"Jumlah Insomnia             : {total_insomnia}")
-                print(f"Jumlah Both                 : {total_both}")
-                print(f"Jumlah Normal               : {total_normal}")
-                print(f"Persentase Sleep Apnea      : {persentase_apnea:.2f}%")
-                print(f"Persentase Insomnia         : {persentase_insomnia:.2f}%")
-                print(f"Persentase Both             : {persentase_both:.2f}%")
-                print(f"Persentase Normal           : {persentase_normal:.2f}%")
+    if len(hasil) == 0:
+        print("Data tidak ditemukan.")
+    else:
+        cetak_tabel_sampel(hasil, "\nHASIL PENCARIAN DATA SAMPEL")
+        print(f"Jumlah data ditemukan: {len(hasil)}")
     return kembali_ke_menu(username)
 
 print("\n========( Sleep Disorder Risk Screening System )========")
