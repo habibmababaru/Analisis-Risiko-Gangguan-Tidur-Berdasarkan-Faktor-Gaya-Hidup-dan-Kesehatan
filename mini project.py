@@ -149,17 +149,20 @@ def menu_awal():
         return menu_awal()          
     elif opsi == "2":
         print("\n===( Login )===")
-        username = input("Masukkan username: ").strip()
-        password = input("Masukkan password: ").strip()
-        if username in user_awal and user_awal[username] == hash_password(password):
-            print(f"Login berhasil! Selamat Datang, {username}")
-            return menu_utama(username)
-        else:
-            while username or password not in user_awal:
-                print("Username atau password salah!")
-                username = input("Masukkan username: ").strip()
-                password = input("Masukkan password: ").strip()
-                continue
+        print("(Kosongkan username lalu tekan Enter untuk kembali ke Beranda)")
+        percobaan = 0
+        while percobaan < 3:
+            username = input("Masukkan username: ").strip()
+            if username == "":
+                return menu_awal()
+            password = input("Masukkan password: ").strip()
+            if username in user_awal and user_awal[username] == hash_password(password):
+                print(f"Login berhasil! Selamat Datang, {username}")
+                return menu_utama(username)
+            percobaan += 1
+            print(f"Username atau password salah! ({percobaan}/3)")
+            print("Belum punya akun? Kosongkan username untuk kembali ke Beranda, lalu pilih 1. Register terlebih dahulu.")
+        return menu_awal()
     elif opsi == "3":
         print("\nTerima kasih telah menggunakan sistem skrining risiko gangguan tidur!")
     else:
@@ -203,10 +206,6 @@ def menu_utama(username):
     else:
         print("\nMenu tidak tersedia!")
         return menu_utama(username)
-
-def menu_cari_data(username ):
-    print("Coming Soon")
-    return kembali_ke_menu(username)
 
 def kembali_ke_menu(username):
     print("\n1. Back to Menu")
@@ -484,6 +483,7 @@ def menu_skrining(username):
         "daily_steps": daily_steps
         }
     path = simpan_riwayat(username,parameter,total_skor_apnea,total_skor_insomnia,status_user)
+    tambah_ke_dataset(parameter)
     print(f"\nHasil Skrining Anda disimpan ke: {os.path.abspath(path)}")
 
     print(f"\n[Hasil Skrining Pengguna: {username}]")                
@@ -534,6 +534,12 @@ def simpan_riwayat(username,parameter,total_skor_apnea,total_skor_insomnia,statu
         })
     return path
 
+def tambah_ke_dataset(p):
+    with open(file_csv, "r", encoding="utf-8-sig") as f:
+        id_baru = len(f.readlines())
+    with open(file_csv, "a", encoding="utf-8") as f:
+        f.write(f"{id_baru};{p['gender']};{p['age']};{p['sleep_duration']};{p['sleep_quality']};{p['activity_level']};{p['stress_level']};{p['bmi_category']};{p['blood_pressure']};{p['heart_rate']};{p['daily_steps']}\n")
+
 def baca_riwayat(username):
     path = path_riwayat(username)
     if not os.path.exists(path):
@@ -572,7 +578,25 @@ def menu_riwayat(username):
     print("Note: Hasil ini hanya skrining awal berbasis skor, bukan diagnosis medis!")
 
     return kembali_ke_menu(username)
-    
+
+def menu_data_sampel(username):
+    data_sampel = muat_data_sampel()
+    if not os.path.exists(file_csv):
+        print("File CSV tidak Ditemukan")
+    elif len(data_sampel) == 0:
+        print("\nDataset tidak valid!")
+    else:
+        cetak_tabel_sampel(data_sampel, "TABEL SAMPEL RISIKO SLEEP DISORDER")
+        daftar_status = ["Sleep Apnea", "Insomnia", "Both", "Normal"]
+        jumlah = {s: sum(1 for r in data_sampel if r["status"] == s) for s in daftar_status}
+        print("\n[RINGKASAN TABEL SAMPEL]")
+        print(f"{'Jumlah Data':<28}: {len(data_sampel)}")
+        for s in daftar_status:
+            print(f"{'Jumlah ' + s:<28}: {jumlah[s]}")
+        for s in daftar_status:
+            print(f"{'Persentase ' + s:<28}: {jumlah[s] / len(data_sampel) * 100:.2f}%")
+    return kembali_ke_menu(username)
+
 def muat_data_sampel():
     hasil = []
     if not os.path.exists(file_csv):
