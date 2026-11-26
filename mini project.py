@@ -6,7 +6,7 @@ import json
 import hashlib
 from datetime import datetime
 
-file_csv = r"C:\Users\Admin\Downloads\Mini Project\Sleep_health_and_lifestyle_dataset(rev).csv"
+file_csv = r"C:\Users\Admin\Downloads\Mini Project\Sleep_health_and_lifestyle_dataset.csv"
 kolom_wajib = [ 
     "gender", "age", "sleep_duration", "sleep_quality", 
     "activity_level", "stress_level", "bmi_category", 
@@ -30,10 +30,16 @@ skor_insomnia = 0
 text1 = (
     "Gangguan Tidur (Sleep Disorder) adalah kelainan pada pola tidur seseorang. Kondisi ini dapat menurunkan kualitas tidur dan berdampak pada kesehatan secara keseluruhan." 
     "Gangguan tidur dapat menyebabkan kantuk di siang hari, sulit tidur di malam hari,  atau  memiliki pola tidur dan  bangun  yang  tidak  teratur. Tanpa  penanganan  yang" 
-    "tepat, gangguan tidur dapat meningkatkan risiko terjadinya berbagai masalah kesehatan, seperti hipertensi dan penyakit jantung."
+    "tepat, gangguan tidur dapat meningkatkan risiko terjadinya berbagai masalah kesehatan, seperti hipertensi dan penyakit jantung.\n"
+    "Berikut 2 jenis gangguan tidur yang akan ditemui dalam program ini:\n"
+    "A. Sleep Apnea\n"
+    "   Sleep Apnea adalah gangguan tidur serius ketika pernapasan berhenti dan dimulai berulang kali saat tidur, berlangsung selama beberapa detik hingga menit. Pengidapnya saat tidur akan mendengkur keras, jeda napas yang disadari orang lain, terbangun terengah-engah atau seperti tersedak.\n"
+    "B. Insomnia\n"
+    "   Insomnia adalah gangguan tidur yang membuat seseorang sulit mulai tidur, sering terbangun di malam hari, sulit tidur kembali, atau bangun terlalu awal sehingga kualitas dan waktu tidurnya tidak tercukupi."
     )
 text2 = (
     "Pembobotan Skor setiap variabel terhadap status akhir Sleep Disorder."
+    "\nKeterangan: < (kecil dari), > (besar dari), >= (lebih besar atau sama besar)"
     "\nA. Gender    -->  Jenis kelamin pengguna/sampel."
     "\n                  Male   = skor apnea + 2, skor insomnia + 0"
     "\n                  Female = skor apnea + 0, skor insomnia + 1"
@@ -511,7 +517,7 @@ def buat_rekomendasi(status_user,sleep_duration,activity_level,stress_level,bmi_
             print("Naikkan langkah harian secara bertahap, misalnya tambah 1.000 langkah tiap minggu.")
     else:
         print("Tidak ada yang perlu diperbaiki lagi! Semoga tidur Anda menjadi lebih baik kedepannya.")
-    return "Note: Hasil ini hanya skrining awal berbasis skor, bukan diagnosis medis!"
+    return "\nNote: Hasil ini hanya skrining awal berbasis skor, bukan diagnosis medis!"
 
 def path_riwayat(username):
     name = re.sub(r"[^A-Za-z0-9_-]", "_", username)
@@ -602,7 +608,7 @@ def muat_data_sampel():
     if not os.path.exists(file_csv):
         return hasil
     with open(file_csv, "r", newline="", encoding="utf-8-sig") as file:
-        for row in csv.DictReader(file):
+        for row in csv.DictReader(file, delimiter=";"):
             try:
                 row["person_id"]
                 semua_skor = [klasifikasi_gender(row["gender"]), klasifikasi_age(int(row["age"])), klasifikasi_sleep_duration(float(row["sleep_duration"])), klasifikasi_sleep_quality(int(row["sleep_quality"])), klasifikasi_activity_level(int(row["activity_level"])), klasifikasi_stress_level(int(row["stress_level"])), klasifikasi_bmi_category(row["bmi_category"]), klasifikasi_blood_pressure(row["blood_pressure"]), klasifikasi_heart_rate(int(row["heart_rate"])), klasifikasi_daily_steps(int(row["daily_steps"]))]
